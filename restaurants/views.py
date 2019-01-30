@@ -1,5 +1,5 @@
 from django.shortcuts import render, redirect
-from .models import Restaurant
+from .models import Restaurant, Item
 from .forms import RestaurantForm, SignupForm, SigninForm
 from django.contrib.auth import login, authenticate, logout
 
@@ -51,7 +51,8 @@ def restaurant_list(request):
 
 def restaurant_detail(request, restaurant_id):
     context = {
-        "restaurant": Restaurant.objects.get(id=restaurant_id)
+        "restaurant": Restaurant.objects.get(id=restaurant_id),
+        'items':Item.objects.filter(restaurant_id=restaurant_id),
     }
     return render(request, 'detail.html', context)
 
@@ -60,19 +61,38 @@ def restaurant_create(request):
     if request.method == "POST":
         form = RestaurantForm(request.POST, request.FILES)
         if form.is_valid():
+            
+            restaurant = form.save(commit=False)
+            restaurant.owner = request.user
+            
             form.save()
+            
             return redirect('restaurant-list')
+   
     context = {
         "form":form,
     }
     return render(request, 'create.html', context)
 
-def item_create(request):
+def item_create(request, restaurant_id):
+    restaurant_obj = Restaurant.objects.get(id=restaurant_id)
+    form = ItemForm(instance=restaurant_obj)
+    if request.method == "POST":
+        form = ItemForm(request.POST, request.FILES, instance=restaurant_obj)
+        if form.is_valid():
 
+            obj = form.save(commit=False)
+            obj.restaurant = restaurant
+
+            form.save()
+            return redirect('restaurant-detail')
+    
     context = {
-        
+        "restaurant_obj": restaurant_obj,
+        "form":form,
     }
-    return render(request, 'item_create.html', context)
+
+    return render(request, 'item_create.html', context, restaurant_id)
 
 def restaurant_update(request, restaurant_id):
     restaurant_obj = Restaurant.objects.get(id=restaurant_id)
