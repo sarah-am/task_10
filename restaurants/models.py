@@ -10,10 +10,13 @@ class Restaurant(models.Model):
     owner = models.ForeignKey(User, on_delete=models.SET_NULL, null=True)
 
     def __str__(self):
-    	return self.name
+        return self.name
 
 class Item(models.Model):
-	name = models.CharField(max_length=120)
-	description = models.TextField()
-	price = models.IntegerField()
-	restaurant = models.ForeignKey(Restaurant, on_delete=models.SET_NULL, null=True)
+    name = models.CharField(max_length=120)
+    description = models.TextField()
+    price = models.IntegerField()
+    restaurant = models.ForeignKey(Restaurant, on_delete=models.SET_NULL, null=True)
+
+    def __str__(self):
+        return "%s, %s, %s" % (self.name, self.description, self.price)
